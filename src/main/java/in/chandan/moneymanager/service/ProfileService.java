@@ -12,12 +12,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProfileService {
     private final ProfileRepository profileRepository;
+    private final EmailServise emailService;
 
     public ProfileDTO registerProfile(ProfileDTO profileDTO){
         ProfileEntity newProfile = toEntity(profileDTO);
         newProfile.setActivationToken(UUID.randomUUID().toString());
         newProfile = profileRepository.save(newProfile);
 
+        // send activation email
+        String activationLink = "http://localhost:8000/activate?token" + newProfile.getActivationToken();
+        String subject = "Activate your Money Manager account";
+        String body = "Check on the following link to activate your account: " + activationLink;
+        emailService.sendEmail(newProfile.getEmail(), subject, body);
         return toDTO(newProfile);
     }
 
